@@ -1,6 +1,9 @@
 package com.connorfilipovic.todo.todolist
 
 import android.view.LayoutInflater
+import android.graphics.Paint
+import android.util.Log
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.connorfilipovic.todo.R
@@ -28,6 +31,27 @@ class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>(
         val itemViewHolder = viewHolder as TodoListViewHolder
 
         itemViewHolder.itemTitleView?.text = listOfItems[position].itemTitle
+        itemViewHolder.itemView.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(v: View?) {
+                val item = listOfItems.get(position)
+
+                //item has been completed
+                if(!item.completed) {
+                    item.completed = true
+
+                    itemViewHolder.itemTitleView?.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
+
+                    itemViewHolder.itemCompletedIcon!!.setImageResource(R.drawable.ic_check_circle)
+                }
+                else {
+                    item.completed = false
+
+                    itemViewHolder.itemTitleView?.paintFlags = itemViewHolder.itemTitleView!!.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+
+                    itemViewHolder.itemCompletedIcon!!.setImageResource(R.drawable.ic_radio_button_unchecked)
+                }
+            }
+        })
     }
 
     fun addTodoItem(todoItem: TodoItemModel) {
