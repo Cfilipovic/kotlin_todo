@@ -1,20 +1,20 @@
 package com.connorfilipovic.todo.todolist
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import com.connorfilipovic.todo.MainActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.model.TodoItemModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_todo_list.*
 import java.util.*
+
 
 class TodoListFragment : Fragment() {
 
@@ -28,6 +28,7 @@ class TodoListFragment : Fragment() {
 
     val cal = Calendar.getInstance()
     lateinit var date: String
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreate(savedInstanceState)
@@ -43,7 +44,7 @@ class TodoListFragment : Fragment() {
         initView()
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString("DATE")?.let {
             date = it
@@ -59,11 +60,19 @@ class TodoListFragment : Fragment() {
         val todoListAdapter = TodoListGridRecyclerAdapter()
         rv_todo_list.adapter = todoListAdapter
 
+        val itemSwipeHandler = ItemTouchHelper(SwipeToDeleteCallback(todoListAdapter, context!!))
+        itemSwipeHandler.attachToRecyclerView(rv_todo_list)
+
         //add dummy data for temp
         //TODO: actually add data in the future
 
         for(x in 0..10) {
             todoListAdapter.addTodoItem(TodoItemModel("Test: " + x))
+        }
+
+        //register add new todo item FAB
+        btnAddTodoItem.setOnClickListener {
+            Toast.makeText(context, "FAB is clicked...", Toast.LENGTH_LONG).show()
         }
     }
 }

@@ -39,4 +39,9 @@ class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>(
         this.listOfItems.remove(todoItem)
         notifyDataSetChanged()
     }
+
+    fun removeTodoItem(position: Int) {
+        this.listOfItems.removeAt(position)
+        notifyDataSetChanged()
+    }
 }

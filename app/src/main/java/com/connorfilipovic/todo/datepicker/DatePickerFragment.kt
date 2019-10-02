@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.widget.DatePicker
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.todolist.TodoListFragment
@@ -28,6 +29,7 @@ class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener 
         //Launch the date picker dialog
         return DatePickerDialog(
             context!!,
+//            R.style.AppTheme,
             this,
             year,
             month,
