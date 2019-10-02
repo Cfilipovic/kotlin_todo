@@ -1,4 +1,4 @@
-package com.connorfilipovic.todo
+package com.connorfilipovic.todo.todolist
 
 import android.view.LayoutInflater
 import android.view.View

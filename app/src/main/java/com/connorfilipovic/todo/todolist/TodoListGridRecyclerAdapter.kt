@@ -1,8 +1,9 @@
-package com.connorfilipovic.todo
+package com.connorfilipovic.todo.todolist
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.model.TodoItemModel
 
 class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>() {
