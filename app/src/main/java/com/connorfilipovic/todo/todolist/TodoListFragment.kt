@@ -80,8 +80,10 @@ class TodoListFragment : Fragment() {
                 if (documentSnapshot != null) {
                     val todoList = documentSnapshot.toObject(TodoListModel::class.java)
 
-                    for(todoItem in todoList!!.todoList) {
-                        todoListAdapter.addTodoItem(todoItem)
+                    if(!todoList!!.todoList.isEmpty()) {
+                        for (todoItem in todoList!!.todoList) {
+                            todoListAdapter.addTodoItem(todoItem)
+                        }
                     }
                 } else {
                     Log.d("TodoListFragment", "No such document")
