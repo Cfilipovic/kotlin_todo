@@ -10,9 +10,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.connorfilipovic.todo.MainActivity
 import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.model.TodoItemModel
+import com.connorfilipovic.todo.model.TodoListModel
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_input_todo_item.view.*
 import kotlinx.android.synthetic.main.fragment_todo_list.*
@@ -54,7 +58,7 @@ class TodoListFragment : Fragment() {
             date = it
 
             //update the toolbar title
-            activity!!.toolbar.setTitle("${date} Todo List")
+            (activity as MainActivity).toolbar.setTitle("${date} Todo List")
         }
     }
 
@@ -64,15 +68,28 @@ class TodoListFragment : Fragment() {
         todoListAdapter = TodoListGridRecyclerAdapter()
         rv_todo_list.adapter = todoListAdapter
 
-        val itemSwipeHandler = ItemTouchHelper(SwipeToDeleteCallback(todoListAdapter, context!!))
+        val itemSwipeHandler = ItemTouchHelper(SwipeToDeleteCallback(todoListAdapter, context!!, date))
         itemSwipeHandler.attachToRecyclerView(rv_todo_list)
 
-        //add dummy data for temp
-        //TODO: actually add data in the future
+        //retrieve todo list
+        val user = FirebaseAuth.getInstance().currentUser
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("users").document(user?.uid.toString()).collection("lists").document(date)
+        docRef.get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot != null) {
+                    val todoList = documentSnapshot.toObject(TodoListModel::class.java)
 
-        for(x in 0..10) {
-            todoListAdapter.addTodoItem(TodoItemModel("Test: " + x, false))
-        }
+                    for(todoItem in todoList!!.todoList) {
+                        todoListAdapter.addTodoItem(todoItem)
+                    }
+                } else {
+                    Log.d("TodoListFragment", "No such document")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("TodoListFragment", "get failed with ", exception)
+            }
 
         //register add new todo item FAB
         btnAddTodoItem.setOnClickListener {
@@ -88,11 +105,11 @@ class TodoListFragment : Fragment() {
 
         builder.setView(view)
 
-        builder.setPositiveButton(android.R.string.ok) { dialog, p1 ->
+        builder.setPositiveButton(android.R.string.ok) { _, _ ->
 
         }
 
-        builder.setNegativeButton(android.R.string.cancel) { dialog, p1 ->
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
             dialog.cancel()
         }
 
@@ -112,6 +129,11 @@ class TodoListFragment : Fragment() {
                 val todoItem = TodoItemModel(newTodoItemText, false)
                 todoListAdapter.addTodoItem(todoItem)
                 todoListAdapter.notifyDataSetChanged()
+
+                //store the todo list under the user
+                val user = FirebaseAuth.getInstance().currentUser
+                val db = FirebaseFirestore.getInstance()
+                db.collection("users").document(user?.uid.toString()).collection("lists").document(date).set(TodoListModel(todoListAdapter.listOfItems))
 
                 Snackbar.make(getView()!!, "Todo item successfully added!", Snackbar.LENGTH_SHORT).show()
 

@@ -2,11 +2,13 @@ package com.connorfilipovic.todo.datepicker
 
 import android.app.DatePickerDialog
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import com.connorfilipovic.todo.MainActivity
 import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.todolist.TodoListFragment
 import kotlinx.android.synthetic.main.activity_main.*
@@ -28,7 +30,7 @@ class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener 
 
         //Launch the date picker dialog
         return DatePickerDialog(
-            context!!,
+            (context as Context),
 //            R.style.AppTheme,
             this,
             year,
@@ -40,7 +42,7 @@ class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener 
 
     //Listener for date set
     override fun onDateSet(view: DatePicker, year: Int, month: Int, day: Int) {
-        activity!!.supportFragmentManager.beginTransaction().replace(R.id.fragment_layout, TodoListFragment.newInstance(formatDate(year,month,day)), "todoList").commit()
+        (activity as MainActivity).supportFragmentManager.beginTransaction().replace(R.id.fragment_layout, TodoListFragment.newInstance(formatDate(year,month,day)), "todoList").commit()
     }
 
 

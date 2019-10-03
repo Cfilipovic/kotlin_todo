@@ -1,8 +1,7 @@
 package com.connorfilipovic.todo.todolist
 
-import android.view.LayoutInflater
 import android.graphics.Paint
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -10,7 +9,7 @@ import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.model.TodoItemModel
 
 class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private var listOfItems = mutableListOf<TodoItemModel>()
+    var listOfItems = mutableListOf<TodoItemModel>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         //inflate the item view and grab the layout parameters
@@ -41,14 +40,14 @@ class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>(
 
                     itemViewHolder.itemTitleView?.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
 
-                    itemViewHolder.itemCompletedIcon!!.setImageResource(R.drawable.ic_check_circle)
+                    itemViewHolder.itemCompletedIcon?.setImageResource(R.drawable.ic_check_circle)
                 }
                 else {
                     item.completed = false
 
                     itemViewHolder.itemTitleView?.paintFlags = itemViewHolder.itemTitleView!!.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
 
-                    itemViewHolder.itemCompletedIcon!!.setImageResource(R.drawable.ic_radio_button_unchecked)
+                    itemViewHolder.itemCompletedIcon?.setImageResource(R.drawable.ic_radio_button_unchecked)
                 }
             }
         })

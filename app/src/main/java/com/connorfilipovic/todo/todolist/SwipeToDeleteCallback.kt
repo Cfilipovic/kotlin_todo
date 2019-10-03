@@ -9,8 +9,11 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.connorfilipovic.todo.R
+import com.connorfilipovic.todo.model.TodoListModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-class SwipeToDeleteCallback(val adapter: TodoListGridRecyclerAdapter, context: Context) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+class SwipeToDeleteCallback(val adapter: TodoListGridRecyclerAdapter, context: Context, val date: String) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
     private val deleteIcon = ContextCompat.getDrawable(context, R.drawable.ic_delete_sweep)
     private val intrinsicWidth = deleteIcon!!.intrinsicWidth
@@ -23,6 +26,14 @@ class SwipeToDeleteCallback(val adapter: TodoListGridRecyclerAdapter, context: C
         if(direction == ItemTouchHelper.LEFT) {
             adapter.removeTodoItem(viewHolder.adapterPosition)
             adapter.notifyDataSetChanged()
+
+            //store the todo list under the user
+            val user = FirebaseAuth.getInstance().currentUser
+            val db = FirebaseFirestore.getInstance()
+            db.collection("users").document(user?.uid.toString()).collection("lists").document(date).set(
+                TodoListModel(adapter.listOfItems)
+            )
+
         }
     }
 
@@ -60,7 +71,7 @@ class SwipeToDeleteCallback(val adapter: TodoListGridRecyclerAdapter, context: C
 
         // Draw the delete icon
         deleteIcon!!.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom)
-        deleteIcon!!.draw(c)
+        deleteIcon.draw(c)
 
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
     }

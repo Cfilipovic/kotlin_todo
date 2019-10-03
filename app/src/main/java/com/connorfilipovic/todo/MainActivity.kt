@@ -1,17 +1,21 @@
 package com.connorfilipovic.todo
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.connorfilipovic.todo.datepicker.DatePickerFragment
 import com.connorfilipovic.todo.todolist.TodoListFragment
+import com.firebase.ui.auth.AuthUI
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.DateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
     var calendar = Calendar.getInstance()
+    val RC_SIGN_IN = 123
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,8 +29,22 @@ class MainActivity : AppCompatActivity() {
         //setting toolbar
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction().add(R.id.fragment_layout, TodoListFragment.newInstance(getCurrentDate()), "todoList").commit()
+        //signin user
+        promptSignIn()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == Activity.RESULT_OK) {
+                supportFragmentManager.beginTransaction().add(R.id.fragment_layout, TodoListFragment.newInstance(getCurrentDate()), "todoList").commit()
+            } else {
+                // Sign in failed. If response is null the user canceled the
+                // sign-in flow using the back button. Otherwise check
+                // response.getError().getErrorCode() and handle the error.
+                // ...
+            }
         }
     }
 
@@ -69,5 +87,21 @@ class MainActivity : AppCompatActivity() {
         // Format the date picker selected date
         val df = DateFormat.getDateInstance(DateFormat.LONG)
         return df.format(chosenDate)
+    }
+
+    private fun promptSignIn() {
+        // Choose authentication providers
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.EmailBuilder().build(),
+            AuthUI.IdpConfig.GoogleBuilder().build())
+
+        // Create and launch sign-in intent
+        startActivityForResult(
+            AuthUI.getInstance()
+                .createSignInIntentBuilder()
+                .setIsSmartLockEnabled(false)
+                .setAvailableProviders(providers)
+                .build(),
+            RC_SIGN_IN)
     }
 }
