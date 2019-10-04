@@ -6,7 +6,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -65,10 +67,10 @@ class TodoListFragment : Fragment() {
     private fun initView() {
         rv_todo_list.layoutManager = GridLayoutManager(context, 2)
 
-        todoListAdapter = TodoListGridRecyclerAdapter()
+        todoListAdapter = TodoListGridRecyclerAdapter(date)
         rv_todo_list.adapter = todoListAdapter
 
-        val itemSwipeHandler = ItemTouchHelper(SwipeToDeleteCallback(todoListAdapter, context!!, date))
+        val itemSwipeHandler = ItemTouchHelper(SwipeToDeleteCallback(todoListAdapter, context!!, date, tv_no_items))
         itemSwipeHandler.attachToRecyclerView(rv_todo_list)
 
         //retrieve todo list
@@ -77,16 +79,24 @@ class TodoListFragment : Fragment() {
         val docRef = db.collection("users").document(user?.uid.toString()).collection("lists").document(date)
         docRef.get()
             .addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot != null) {
+                if (documentSnapshot != null && documentSnapshot.data != null) {
                     val todoList = documentSnapshot.toObject(TodoListModel::class.java)
 
                     if(!todoList!!.todoList.isEmpty()) {
                         for (todoItem in todoList!!.todoList) {
                             todoListAdapter.addTodoItem(todoItem)
                         }
+
+                        tv_no_items.visibility = View.GONE
                     }
+                    else {
+                        tv_no_items.visibility = View.VISIBLE
+                    }
+
+                    progress_bar.visibility = View.GONE
                 } else {
-                    Log.d("TodoListFragment", "No such document")
+                    progress_bar.visibility = View.GONE
+                    tv_no_items.visibility = View.VISIBLE
                 }
             }
             .addOnFailureListener { exception ->
@@ -94,7 +104,7 @@ class TodoListFragment : Fragment() {
             }
 
         //register add new todo item FAB
-        btnAddTodoItem.setOnClickListener {
+        btn_add_todo_item.setOnClickListener {
             showCreateTodoItemDialog()
         }
     }
@@ -122,25 +132,32 @@ class TodoListFragment : Fragment() {
             val newTodoItemText = view.todoItemEditText.text.toString()
             var isValid = true
             if (newTodoItemText.isBlank()) {
-                Log.d("TAG", "test")
                 view.todoItemEditText.error = "Error task required"
                 isValid = false
             }
 
             if (isValid) {
                 val todoItem = TodoItemModel(newTodoItemText, false)
+                //at least one item has been created
+                tv_no_items.visibility = View.GONE
+
                 todoListAdapter.addTodoItem(todoItem)
                 todoListAdapter.notifyDataSetChanged()
 
-                //store the todo list under the user
-                val user = FirebaseAuth.getInstance().currentUser
-                val db = FirebaseFirestore.getInstance()
-                db.collection("users").document(user?.uid.toString()).collection("lists").document(date).set(TodoListModel(todoListAdapter.listOfItems))
+                //update the todolist db object
+                storeTodoList()
 
                 Snackbar.make(getView()!!, "Todo item successfully added!", Snackbar.LENGTH_SHORT).show()
 
                 alertDialog.dismiss()
             }
         }
+    }
+
+    private fun storeTodoList() {
+        //store the todo list under the user
+        val user = FirebaseAuth.getInstance().currentUser
+        val db = FirebaseFirestore.getInstance()
+        db.collection("users").document(user?.uid.toString()).collection("lists").document(date).set(TodoListModel(todoListAdapter.listOfItems))
     }
 }

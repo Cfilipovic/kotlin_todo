@@ -5,6 +5,8 @@ import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -12,8 +14,9 @@ import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.model.TodoListModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.fragment_todo_list.*
 
-class SwipeToDeleteCallback(val adapter: TodoListGridRecyclerAdapter, context: Context, val date: String) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+class SwipeToDeleteCallback(val adapter: TodoListGridRecyclerAdapter, val context: Context, val date: String, val tv_no_items: TextView) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
     private val deleteIcon = ContextCompat.getDrawable(context, R.drawable.ic_delete_sweep)
     private val intrinsicWidth = deleteIcon!!.intrinsicWidth
@@ -26,6 +29,14 @@ class SwipeToDeleteCallback(val adapter: TodoListGridRecyclerAdapter, context: C
         if(direction == ItemTouchHelper.LEFT) {
             adapter.removeTodoItem(viewHolder.adapterPosition)
             adapter.notifyDataSetChanged()
+
+            if(adapter.listOfItems.size <= 0) {
+                //there are no todo items
+                tv_no_items.visibility = View.VISIBLE
+            }
+            else {
+                tv_no_items.visibility = View.GONE
+            }
 
             //store the todo list under the user
             val user = FirebaseAuth.getInstance().currentUser

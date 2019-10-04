@@ -7,8 +7,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.model.TodoItemModel
+import com.connorfilipovic.todo.model.TodoListModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class TodoListGridRecyclerAdapter(val date : String):RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var listOfItems = mutableListOf<TodoItemModel>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -28,15 +31,29 @@ class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>(
 
     override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) {
         val itemViewHolder = viewHolder as TodoListViewHolder
+        val item = listOfItems.get(position)
 
         itemViewHolder.itemTitleView?.text = listOfItems[position].itemTitle
+        if(item.completed) {
+            itemViewHolder.itemTitleView?.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
+
+            itemViewHolder.itemCompletedIcon?.setImageResource(R.drawable.ic_check_circle)
+        }
+        else {
+            itemViewHolder.itemTitleView?.paintFlags = itemViewHolder.itemTitleView!!.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+
+            itemViewHolder.itemCompletedIcon?.setImageResource(R.drawable.ic_radio_button_unchecked)
+        }
+
+
         itemViewHolder.itemView.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
-                val item = listOfItems.get(position)
-
                 //item has been completed
                 if(!item.completed) {
                     item.completed = true
+
+                    //update the todolist db object
+                    storeTodoList()
 
                     itemViewHolder.itemTitleView?.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
 
@@ -44,6 +61,9 @@ class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>(
                 }
                 else {
                     item.completed = false
+
+                    //update the todolist db object
+                    storeTodoList()
 
                     itemViewHolder.itemTitleView?.paintFlags = itemViewHolder.itemTitleView!!.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
 
@@ -66,5 +86,14 @@ class TodoListGridRecyclerAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder>(
     fun removeTodoItem(position: Int) {
         this.listOfItems.removeAt(position)
         notifyDataSetChanged()
+    }
+
+    private fun storeTodoList() {
+        //store the todo list under the user
+        val user = FirebaseAuth.getInstance().currentUser
+        val db = FirebaseFirestore.getInstance()
+        db.collection("users").document(user?.uid.toString()).collection("lists").document(date).set(
+            TodoListModel(listOfItems)
+        )
     }
 }
