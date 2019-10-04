@@ -64,10 +64,16 @@ class TodoListFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        tv_no_items.visibility = View.VISIBLE
+        tv_no_items.visibility = View.GONE
+    }
+
     private fun initView() {
         rv_todo_list.layoutManager = GridLayoutManager(context, 2)
 
-        todoListAdapter = TodoListGridRecyclerAdapter(date)
+        todoListAdapter = TodoListGridRecyclerAdapter(activity!!, date)
         rv_todo_list.adapter = todoListAdapter
 
         val itemSwipeHandler = ItemTouchHelper(SwipeToDeleteCallback(todoListAdapter, context!!, date, tv_no_items))
@@ -86,6 +92,7 @@ class TodoListFragment : Fragment() {
                         for (todoItem in todoList!!.todoList) {
                             todoListAdapter.addTodoItem(todoItem)
                         }
+
 
                         tv_no_items.visibility = View.GONE
                     }

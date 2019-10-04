@@ -1,17 +1,20 @@
 package com.connorfilipovic.todo.todolist
 
+import android.app.Activity
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.connorfilipovic.todo.MainActivity
 import com.connorfilipovic.todo.R
 import com.connorfilipovic.todo.model.TodoItemModel
 import com.connorfilipovic.todo.model.TodoListModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.fragment_todo_list.*
 
-class TodoListGridRecyclerAdapter(val date : String):RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class TodoListGridRecyclerAdapter(val activity : Activity, val date : String):RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var listOfItems = mutableListOf<TodoItemModel>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -25,6 +28,11 @@ class TodoListGridRecyclerAdapter(val date : String):RecyclerView.Adapter<Recycl
         itemView.layoutParams = layoutParams
 
         return TodoListViewHolder(itemView)
+    }
+
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        activity!!.tv_no_items.visibility = View.GONE
     }
 
     override fun getItemCount(): Int = listOfItems.size
@@ -74,6 +82,8 @@ class TodoListGridRecyclerAdapter(val date : String):RecyclerView.Adapter<Recycl
     }
 
     fun addTodoItem(todoItem: TodoItemModel) {
+        activity!!.tv_no_items.visibility = View.VISIBLE
+        activity!!.tv_no_items.visibility = View.GONE
         this.listOfItems.add(todoItem)
         notifyDataSetChanged()
     }
